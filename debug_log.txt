@@ -1,0 +1,9 @@
+RAW DATA:
+{"id":1,"status":"Preparing"}
+
+PARSED:
+Array
+(
+    [id] => 1
+    [status] => Preparing
+)

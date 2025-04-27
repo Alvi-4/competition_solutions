@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chef Dashboard - Order Management</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #f4f4f4; }
+        button { padding: 6px 12px; margin: 2px; cursor: pointer; }
+        .preparing { background-color: #FFA500; }
+        .complete { background-color: #4CAF50; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Chef Dashboard - Order Management</h1>
+
+    <table id="ordersTable">
+        <thead>
+            <tr>
+                <th>Table Number</th>
+                <th>Item Name</th>
+                <th>Quantity</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Orders will be populated here -->
+        </tbody>
+    </table>
+
+    <script>
+        // Fetch the orders for the chef
+        async function fetchOrders() {
+            try {
+                const response = await fetch('http://localhost/canteen_project/fetch_orders_for_chef.php');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const orders = result.orders;
+                    const tableBody = document.querySelector('#ordersTable tbody');
+                    tableBody.innerHTML = ''; // Clear the table before adding new rows
+                    
+                    // Populate the table with orders
+                    orders.forEach(order => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${order.table_number}</td>
+                            <td>${order.item_name}</td>
+                            <td>${order.quantity}</td>
+                            <td>${order.status}</td>
+                            <td>
+                                ${order.status === 'Pending' ? 
+                                    `<button class="preparing" onclick="updateOrderStatus(${order.id}, 'Preparing')">Mark as Preparing</button>` : 
+                                    ''}
+                                ${order.status === 'Preparing' ? 
+                                    `<button class="complete" onclick="updateOrderStatus(${order.id}, 'Complete')">Mark as Complete</button>` : 
+                                    ''}
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    alert(result.message); // Show error message if any
+                }
+            } catch (error) {
+                console.error('Error fetching orders:', error);
+                alert('An error occurred while fetching orders.');
+            }
+        }
+
+        // Function to update the order status
+        // async function updateOrderStatus(orderId, status) {
+        //     try {
+        //         const response = await fetch('http://localhost/canteen_project/update_order_status.php', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //             },
+        //             body: JSON.stringify({ id: orderId, status: status }),
+        //         });
+        //         const result = await response.json();
+                
+        //         if (result.success) {
+        //             alert('Order status updated successfully');
+        //             fetchOrders(); // Refresh the orders list
+        //         } else {
+        //             alert(result.message); // Show error message if any
+        //         }
+        //     } catch (error) {
+        //         console.error('Error updating order status:', error);
+        //         alert('An error occurred while updating the order status.');
+        //     }
+        // }
+        // Example function to update the order status
+function updateOrderStatus(orderId, status) {
+    const data = {
+        id: orderId,      // Order ID (replace with actual order id)
+        status: status    // The new status for the order (e.g., "Preparing", "Completed")
+    };
+
+    // Send the POST request to the PHP API
+    fetch('http://localhost/canteen_project/update_order_status.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'  // Set the content type as JSON
+        },
+        body: JSON.stringify(data)  // Convert the JavaScript object into a JSON string
+    })
+    .then(response => response.json())  // Parse the JSON response
+    .then(data => {
+        // Handle success or failure response from PHP
+        if (data.success) {
+            console.log('Success:', data.message);  // Show success message
+        } else {
+            console.error('Error:', data.message);  // Show error message
+        }
+    })
+    .catch((error) => {
+        // Handle any errors during the fetch request
+        console.error('Error:', error);
+    });
+}
+
+// Example usage (for testing purposes):
+// Call the function with an order ID of 1 and status 'Preparing'
+updateOrderStatus(1, 'Preparing');
+
+
+        // Fetch the orders when the page loads
+        window.onload = fetchOrders;
+    </script>
+</body>
+</html>

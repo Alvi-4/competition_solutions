@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Order List</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #f4f4f4; }
+    </style>
+</head>
+<body>
+    <h1>Admin Dashboard - Order List</h1>
+    
+    <table id="ordersTable">
+        <thead>
+            <tr>
+                <th>Table Number</th>
+                <th>Item Name</th>
+                <th>Quantity</th>
+                <th>Status</th> <!-- Add a column for the status -->
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Orders will be populated here -->
+        </tbody>
+    </table>
+    
+    <script>
+        // Function to fetch orders from the backend and display them
+        async function fetchOrders() {
+            try {
+                const response = await fetch('http://localhost/canteen_project/fetch_orders.php');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const orders = result.orders;
+                    const tableBody = document.querySelector('#ordersTable tbody');
+                    tableBody.innerHTML = ''; // Clear the table before adding new rows
+                    
+                    // Populate the table with orders
+                    orders.forEach(order => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${order.table_number}</td>
+                            <td>${order.item_name}</td>
+                            <td>${order.quantity}</td>
+                            <td>${order.status}</td> <!-- Display the status -->
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    alert(result.message); // Show error message if any
+                }
+            } catch (error) {
+                console.error('Error fetching orders:', error);
+                alert('An error occurred while fetching orders.');
+            }
+        }
+
+        // Fetch the orders when the page loads
+        window.onload = fetchOrders;
+    </script>
+</body>
+</html>
